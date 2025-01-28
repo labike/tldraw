@@ -17,6 +17,7 @@ import { BindingUtil } from '@tldraw/editor';
 import { Box } from '@tldraw/editor';
 import { Circle2d } from '@tldraw/editor';
 import { ComponentType } from 'react';
+import { CSSProperties } from 'react';
 import { CubicSpline2d } from '@tldraw/editor';
 import { Editor } from '@tldraw/editor';
 import { Geometry2d } from '@tldraw/editor';
@@ -42,6 +43,7 @@ import { RecursivePartial } from '@tldraw/editor';
 import { Result } from '@tldraw/editor';
 import { SerializedSchema } from '@tldraw/editor';
 import { ShapeUtil } from '@tldraw/editor';
+import { ShapeWithCrop } from '@tldraw/editor';
 import { SharedStyle } from '@tldraw/editor';
 import { StateNode } from '@tldraw/editor';
 import { StyleProp } from '@tldraw/editor';
@@ -58,6 +60,7 @@ import { TLAssetId } from '@tldraw/editor';
 import { TLBookmarkShape } from '@tldraw/editor';
 import { TLBookmarkShapeProps } from '@tldraw/editor';
 import { TLClickEventInfo } from '@tldraw/editor';
+import { TLCropInfo } from '@tldraw/editor';
 import { TLDefaultColorTheme } from '@tldraw/editor';
 import { TLDefaultColorThemeColor } from '@tldraw/editor';
 import { TLDefaultFillStyle } from '@tldraw/editor';
@@ -103,6 +106,7 @@ import { TLScribbleProps } from '@tldraw/editor';
 import { TLSelectionBackgroundProps } from '@tldraw/editor';
 import { TLSelectionForegroundProps } from '@tldraw/editor';
 import { TLShape } from '@tldraw/editor';
+import { TLShapeCrop } from '@tldraw/editor';
 import { TLShapeId } from '@tldraw/editor';
 import { TLShapePartial } from '@tldraw/editor';
 import { TLShapeUtilCanBindOpts } from '@tldraw/editor';
@@ -427,6 +431,14 @@ export function createMediaAssetInfoSkeleton(file: File, assetId: TLAssetId, isI
 export function createShapesForAssets(editor: Editor, assets: TLAsset[], position: VecLike): Promise<TLShapeId[]>;
 
 // @public (undocumented)
+export interface CropBoxOptions {
+    // (undocumented)
+    minHeight?: number;
+    // (undocumented)
+    minWidth?: number;
+}
+
+// @public (undocumented)
 export function CursorChatItem(): JSX_2.Element | null;
 
 // @public (undocumented)
@@ -666,6 +678,9 @@ export function DefaultDebugMenu({ children }: TLUiDebugMenuProps): JSX_2.Elemen
 export function DefaultDebugMenuContent(): JSX_2.Element;
 
 // @public (undocumented)
+export const DefaultDialogs: NamedExoticComponent<object>;
+
+// @public (undocumented)
 export let defaultEditorAssetUrls: TLEditorAssetUrls;
 
 // @public (undocumented)
@@ -727,6 +742,9 @@ export const DefaultStylePanel: NamedExoticComponent<TLUiStylePanelProps>;
 
 // @public (undocumented)
 export function DefaultStylePanelContent({ styles }: TLUiStylePanelContentProps): JSX_2.Element | null;
+
+// @public (undocumented)
+export const DefaultToasts: NamedExoticComponent<object>;
 
 // @public
 export const DefaultToolbar: NamedExoticComponent<DefaultToolbarProps>;
@@ -1231,11 +1249,41 @@ export function getArrowTerminalsInArrowSpace(editor: Editor, shape: TLArrowShap
     start: Vec;
 };
 
+// @public (undocumented)
+export function getCropBox<T extends ShapeWithCrop>(shape: T, info: TLCropInfo<T>, opts?: CropBoxOptions): {
+    id: TLShapeId;
+    props: ShapeWithCrop['props'];
+    type: T['type'];
+    x: number;
+    y: number;
+} | undefined;
+
+// @public (undocumented)
+export function getDefaultCrop(): {
+    bottomRight: {
+        x: number;
+        y: number;
+    };
+    topLeft: {
+        x: number;
+        y: number;
+    };
+};
+
 // @public
 export function getEmbedInfo(definitions: readonly TLEmbedDefinition[], inputUrl: string): TLEmbedResult;
 
 // @public (undocumented)
 export function getOccludedChildren(editor: Editor, parent: TLShape): TLShapeId[];
+
+// @public
+export function getUncroppedSize(shapeSize: {
+    h: number;
+    w: number;
+}, crop: null | TLShapeCrop): {
+    h: number;
+    w: number;
+};
 
 // @public (undocumented)
 export function GroupMenuItem(): JSX_2.Element | null;
@@ -1518,6 +1566,8 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
     // (undocumented)
     indicator(shape: TLNoteShape): JSX_2.Element;
     // (undocumented)
+    isAspectRatioLocked(): boolean;
+    // (undocumented)
     static migrations: TLPropsMigrations;
     // (undocumented)
     onBeforeCreate(next: TLNoteShape): {
@@ -1575,6 +1625,14 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
     } | undefined;
     // (undocumented)
     onEditEnd(shape: TLNoteShape): void;
+    // (undocumented)
+    onResize(shape: any, info: TLResizeInfo<any>): {
+        props: {
+            scale: number;
+        };
+        x: number;
+        y: number;
+    } | undefined;
     // (undocumented)
     static props: RecordProps<TLNoteShape>;
     // (undocumented)
@@ -2114,13 +2172,10 @@ export function TldrawUiDialogFooter({ className, children }: TLUiDialogFooterPr
 export function TldrawUiDialogHeader({ className, children }: TLUiDialogHeaderProps): JSX_2.Element;
 
 // @public (undocumented)
-export const TldrawUiDialogs: NamedExoticComponent<object>;
-
-// @public (undocumented)
 export function TldrawUiDialogsProvider({ context, children }: TLUiDialogsProviderProps): JSX_2.Element;
 
 // @public (undocumented)
-export function TldrawUiDialogTitle({ className, children }: TLUiDialogTitleProps): JSX_2.Element;
+export function TldrawUiDialogTitle({ className, children, style }: TLUiDialogTitleProps): JSX_2.Element;
 
 // @public (undocumented)
 export function TldrawUiDropdownMenuCheckboxItem({ children, onSelect, ...rest }: TLUiDropdownMenuCheckboxItemProps): JSX_2.Element;
@@ -2205,9 +2260,6 @@ export interface TldrawUiProps extends TLUiContextProviderProps {
 
 // @public (undocumented)
 export const TldrawUiSlider: NamedExoticComponent<TLUiSliderProps>;
-
-// @public (undocumented)
-export const TldrawUiToasts: NamedExoticComponent<object>;
 
 // @public (undocumented)
 export function TldrawUiToastsProvider({ children }: TLUiToastsProviderProps): JSX_2.Element;
@@ -2373,6 +2425,8 @@ export interface TLUiComponents {
     // (undocumented)
     DebugPanel?: ComponentType | null;
     // (undocumented)
+    Dialogs?: ComponentType | null;
+    // (undocumented)
     HelperButtons?: ComponentType<TLUiHelperButtonsProps> | null;
     // (undocumented)
     HelpMenu?: ComponentType<TLUiHelpMenuProps> | null;
@@ -2394,6 +2448,8 @@ export interface TLUiComponents {
     SharePanel?: ComponentType | null;
     // (undocumented)
     StylePanel?: ComponentType<TLUiStylePanelProps> | null;
+    // (undocumented)
+    Toasts?: ComponentType | null;
     // (undocumented)
     Toolbar?: ComponentType | null;
     // (undocumented)
@@ -2443,6 +2499,8 @@ export interface TLUiDialog {
     id: string;
     // (undocumented)
     onClose?(): void;
+    // (undocumented)
+    preventBackgroundClose?: boolean;
 }
 
 // @public (undocumented)
@@ -2452,7 +2510,7 @@ export interface TLUiDialogBodyProps {
     // (undocumented)
     className?: string;
     // (undocumented)
-    style?: React.CSSProperties;
+    style?: CSSProperties;
 }
 
 // @public (undocumented)
@@ -2507,6 +2565,8 @@ export interface TLUiDialogTitleProps {
     children: ReactNode;
     // (undocumented)
     className?: string;
+    // (undocumented)
+    style?: CSSProperties;
 }
 
 // @public (undocumented)
@@ -2841,6 +2901,8 @@ export type TLUiIconType = 'align-bottom' | 'align-center-horizontal' | 'align-c
 
 // @public (undocumented)
 export interface TLUiInputProps {
+    // (undocumented)
+    'data-testid'?: string;
     // (undocumented)
     autoFocus?: boolean;
     // (undocumented)

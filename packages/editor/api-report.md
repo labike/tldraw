@@ -74,6 +74,7 @@ import { TLPropsMigrations } from '@tldraw/tlschema';
 import { TLRecord } from '@tldraw/tlschema';
 import { TLScribble } from '@tldraw/tlschema';
 import { TLShape } from '@tldraw/tlschema';
+import { TLShapeCrop } from '@tldraw/tlschema';
 import { TLShapeId } from '@tldraw/tlschema';
 import { TLShapePartial } from '@tldraw/tlschema';
 import { TLStore } from '@tldraw/tlschema';
@@ -746,6 +747,7 @@ export const defaultTldrawOptions: {
     readonly maxPointsPerDrawShape: 500;
     readonly maxShapesPerPage: 4000;
     readonly multiClickDurationMs: 200;
+    readonly noteShapeResizeMode: "none";
     readonly temporaryAssetPreviewLifetimeMs: 180000;
     readonly textShadowLod: 0.35;
 };
@@ -1354,6 +1356,11 @@ export class Editor extends EventEmitter<TLEventMap> {
     hasAncestor(shape: TLShape | TLShapeId | undefined, ancestorId: TLShapeId): boolean;
     // (undocumented)
     hasExternalAssetHandler(type: TLExternalAssetContent['type']): boolean;
+    hasShapeUtil<S extends TLUnknownShape>(shape: S | TLShapePartial<S>): boolean;
+    // (undocumented)
+    hasShapeUtil<S extends TLUnknownShape>(type: S['type']): boolean;
+    // (undocumented)
+    hasShapeUtil<T extends ShapeUtil>(type: T extends ShapeUtil<infer R> ? R['type'] : string): boolean;
     protected readonly history: HistoryManager<TLRecord>;
     inputs: {
         buttons: Set<number>;
@@ -1548,7 +1555,10 @@ export class Editor extends EventEmitter<TLEventMap> {
     // @internal (undocumented)
     _updateShapes(_partials: (null | TLShapePartial | undefined)[]): void;
     updateViewportScreenBounds(screenBounds: Box | HTMLElement, center?: boolean): this;
-    uploadAsset(asset: TLAsset, file: File, abortSignal?: AbortSignal): Promise<string>;
+    uploadAsset(asset: TLAsset, file: File, abortSignal?: AbortSignal): Promise<{
+        meta?: JsonObject;
+        src: string;
+    }>;
     readonly user: UserPreferencesManager;
     visitDescendants(parent: TLPage | TLParentId | TLShape, visitor: (id: TLShapeId) => false | void): this;
     zoomIn(point?: Vec, opts?: TLCameraMoveOptions): this;
@@ -2398,6 +2408,17 @@ export interface ResizeBoxOptions {
     minWidth?: number;
 }
 
+// @public
+export function resizeScaled(shape: TLBaseShape<any, {
+    scale: number;
+}>, { initialBounds, scaleX, scaleY, newPoint, handle }: TLResizeInfo<any>): {
+    props: {
+        scale: number;
+    };
+    x: number;
+    y: number;
+};
+
 // @public (undocumented)
 export const ROTATE_CORNER_TO_SELECTION_CORNER: {
     readonly bottom_left_rotate: "bottom_left";
@@ -2520,6 +2541,7 @@ export abstract class ShapeUtil<Shape extends TLUnknownShape = TLUnknownShape> {
     onBindingChange?(shape: Shape): TLShapePartial<Shape> | void;
     onChildrenChange?(shape: Shape): TLShapePartial[] | void;
     onClick?(shape: Shape): TLShapePartial<Shape> | void;
+    onCrop?(shape: Shape, info: TLCropInfo<Shape>): Omit<TLShapePartial<Shape>, 'id' | 'type'> | undefined | void;
     onDoubleClick?(shape: Shape): TLShapePartial<Shape> | void;
     onDoubleClickEdge?(shape: Shape): TLShapePartial<Shape> | void;
     onDoubleClickHandle?(shape: Shape, handle: TLHandle): TLShapePartial<Shape> | void;
@@ -2972,6 +2994,23 @@ export interface TLContent {
     shapes: TLShape[];
 }
 
+// @public
+export interface TLCropInfo<T extends TLShape> {
+    // (undocumented)
+    change: Vec;
+    // (undocumented)
+    crop: TLShapeCrop;
+    // (undocumented)
+    handle: SelectionHandle;
+    // (undocumented)
+    initialShape: T;
+    // (undocumented)
+    uncroppedSize: {
+        h: number;
+        w: number;
+    };
+}
+
 // @public (undocumented)
 export interface TLCursorProps {
     // (undocumented)
@@ -3130,6 +3169,7 @@ export interface TldrawOptions {
     readonly maxShapesPerPage: number;
     // (undocumented)
     readonly multiClickDurationMs: number;
+    readonly noteShapeResizeMode: 'none' | 'scale';
     readonly temporaryAssetPreviewLifetimeMs: number;
     // (undocumented)
     readonly textShadowLod: number;
